@@ -1,3 +1,14 @@
+/*
+ * Copyright 2012 by Christopher Hallinan; all rights reserved.
+ *         
+ * This file may be used subject to the terms and conditions of the
+ * GNU General Public License Version 2, as published by the Free
+ * Software Foundation.  This program is distributed in the hope
+ * that it will be useful, but WITHOUT ANY WARRANTY; without even
+ * the implied warranty of MERCHANTABILITY or FITNESS FOR A 
+ * PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
