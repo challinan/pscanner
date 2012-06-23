@@ -291,7 +291,7 @@ int main(int argc, char **argv) {
 	/* Prime the pipe by taking a snapshot*/
 	load_dir_entries(dp);
 	count = count_direntries();
-	printf("Found %d entries\n", count); 
+	printf("Found %d processes\n", count); 
 
 	/* Now enter a loop, scanning the directory for any change */
 	while ( 1 ) {
