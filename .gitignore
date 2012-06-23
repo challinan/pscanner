@@ -1,12 +1,6 @@
 # Compiled Object files
-*.slo
-*.lo
 *.o
 
-# Compiled Dynamic libraries
-*.so
+# The target itself
+pscanner
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
