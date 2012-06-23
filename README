@@ -1,5 +1,30 @@
 pscanner
 ========
+Author: Christopher Hallinan <challinan@gmail.com>
 
 Poor man's process scanner
 
+This little program scans /proc/<pid> entries looking for newly spawned
+processes, and reports the command line to the console.
+
+It is called simply by ./pscanner (or in your path, pscanner)
+It takes no parameters.
+
+Due to the way the /proc/<pid>/cmdline entry is updated, the algorithm
+for displaying a new process is as follows:
+
+1) Detect the new process
+2) if the length of it's command line changes, display it
+3) if 300ms passes, display it unconditionally
+
+This is because initially, most processes simply show -bash or /bin/sh
+when initiall spawned.  Only later does the entire cmdline get stored.
+
+Naturally, some processes that come and go quickly will be missed.
+
+INSTALL
+
+Just type make, it should build on any reasonably modern Linux system.
+$ make install > will install to $HOME/bin if it exists, or /usr/bin if not
+
+Comments and enhancements welcome
