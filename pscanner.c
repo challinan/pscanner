@@ -23,6 +23,8 @@
 
 #define MAXPIDS 32768
 
+FILE *outfd;
+
 struct timeval timenow;
 int process_count;
 
@@ -52,13 +54,6 @@ long int timeval_subtract(struct timeval *t2, struct timeval *t1)
     return (diff);
 }
 
-static int j;
-int make_function_for_breakpoint(void) {
-	int i;
-	i = 1+j;
-	return i;
-}
-
 static int diag_count = 0;
 void active_list_add(int pid) {
 
@@ -67,7 +62,7 @@ void active_list_add(int pid) {
 
 	active_pids_t *ap = malloc(sizeof(active_pids_t));
 	if ( ap == NULL ) {
-		printf("malloc failed - bailing\n");
+		fprintf(stderr, "malloc failed - bailing\n");
 		exit(2);
 	}
 
@@ -99,8 +94,7 @@ int active_list_delete(int pid) {
 	
 	/* Scan to end of list looking for pid */
 	if ( active_list_head == NULL ) {
-		printf("active_list_delete: Error list is empty (active_list_head == NULL\n");
-		make_function_for_breakpoint();
+		fprintf(stderr, "active_list_delete: Error list is empty (active_list_head == NULL\n");
 	}
 
 	ptmp = active_list_head;
@@ -115,7 +109,7 @@ int active_list_delete(int pid) {
 				/* Special case, first item on list */
 				if ( ptmp->next == NULL ) {
 					/* this case - only a single item at top of list */
-					// printf("R1:%d\n", ptmp->pid);
+					// fprintf(stderr, "R1:%d\n", ptmp->pid);
 					/* Delete the entry from the array */
 					free(ptmp);
 					active_list_head = NULL;
@@ -127,7 +121,7 @@ int active_list_delete(int pid) {
 				if ( ptmp->next == NULL ) {
 					/* This is the last entry in the list */
 					pprev->next = NULL;
-					// printf("R3:%d\n", ptmp->pid);
+					// fprintf(stderr, "R3:%d\n", ptmp->pid);
 					free(ptmp);
 					return 0;
 				}
@@ -136,7 +130,7 @@ int active_list_delete(int pid) {
 					active_pids_t *pnext = ptmp->next;
 					pprev->next = ptmp->next;	/* Bridge the link */
 					pnext->prev = pprev;
-					// printf("R2:%d\n", ptmp->pid);
+					// fprintf(stderr, "R2:%d\n", ptmp->pid);
 					free(ptmp);
 					return 0;
 				}
@@ -146,8 +140,7 @@ int active_list_delete(int pid) {
 		ptmp = ptmp->next;
 	}
 	/* If we fell through, we didn't find it */
-	make_function_for_breakpoint();
-	printf("Error removing item from active list (%d)\n", pid);
+	fprintf(stderr, "Error removing item from active list (%d)\n", pid);
 	return 1;
 }
 
@@ -219,10 +212,11 @@ void print_process(int pid, int timeout) {
 	if ( pbuf ) {
 		mydentry[pid].cmdline_length = strlen(pbuf);
 		if ( timeout )
-			printf("%d: %s (T)\n", pid, pbuf);
+			fprintf(outfd, "%d: %s (T)\n", pid, pbuf);
 		else
-			printf("%d: %s\n", pid, pbuf);
+			fprintf(outfd, "%d: %s\n", pid, pbuf);
 	}
+	fflush(outfd);
 }
 
 int delete_these_pids[1024];
@@ -287,6 +281,25 @@ int main(int argc, char **argv) {
 	int count, pid;
 	struct dirent *p;
 	char *pbuf;
+	char logfile[128];
+
+	/* Check command line */
+	if ( argc > 1 ) {
+		if ( strncmp(argv[1], "-o", 2) || ( argc != 3 ) ) {
+			fprintf(stderr, "Bad command line: use \"pscanner -o <filename>\"\n");
+			exit(1);
+		}
+		strncpy(logfile, argv[2], 127); 
+		printf("Request to print to file: %s\n", logfile); 
+		outfd = fopen(logfile, "w");
+		if ( outfd == NULL ) {
+			perror("fopen failed:");
+			exit(1);
+		}
+	}
+	else {
+		outfd = stdout;
+	}
 
 	active_list_head = NULL;
 	process_count = 0;
@@ -302,7 +315,7 @@ int main(int argc, char **argv) {
 	/* Prime the pipe by taking a snapshot*/
 	load_dir_entries(dp);
 	count = count_direntries();
-	printf("Found %d processes\n", count); 
+	fprintf(outfd, "Found %d processes\n", count); 
 
 	/* Now enter a loop, scanning the directory for any change */
 	while ( 1 ) {
@@ -334,6 +347,6 @@ int main(int argc, char **argv) {
 			load_dir_entries(dp);
 		}
 	}
-	
+	fclose(outfd);
 	return 0;
 }
