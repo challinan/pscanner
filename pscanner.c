@@ -21,7 +21,7 @@
 #include <errno.h>
 #include <sys/time.h>
 
-#define MAXPIDS 32768
+#define MAXPIDS 65535
 
 FILE *outfd;
 
